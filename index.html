@@ -544,7 +544,7 @@
     var STATE = { MENU: 0, RUN: 1, QUIZ: 2, OVER: 3 };
     var state = STATE.MENU;
     var score = 0, best = loadBest(), cleared = 0;
-    var speed = 0, lastT = 0, spawnTimer = 0;
+    var speedU = 12, lastT = 0, spawnTimer = 0;
     var player = { y: 0, vy: 0, onGround: true };
     var obstacles = [];
     var invincibleUntil = 0;
@@ -590,16 +590,16 @@
     ];
 
     function groundY() { return H * 0.80; }
-    function obsU() { return H * 0.135; }
-    function pUnit() { return H * 0.085; }
-    function playerLeft() { return W * 0.14; }
+    function obsU() { return pUnit() * 1.55; }
+    function pUnit() { return Math.min(H * 0.085, W * 0.08); }
+    function playerLeft() { return W * 0.12; }
     function playerW() { return pUnit() * 2.7; }
     function playerH() { return pUnit() * 2.0; }
 
     /* input */
     function jump() {
       if (state !== STATE.RUN) return;
-      if (player.onGround) { player.vy = H * 2.15; player.onGround = false; }
+      if (player.onGround) { player.vy = pUnit() * 17.5; player.onGround = false; }
     }
     canvas.addEventListener('pointerdown', function (e) {
       if (state === STATE.RUN) { e.preventDefault(); jump(); }
@@ -627,8 +627,8 @@
     document.getElementById('restartBtn').addEventListener('click', startGame);
 
     function startGame() {
-      score = 0; cleared = 0; speed = W * 0.5;
-      spawnTimer = 0.6; obstacles = [];
+      score = 0; cleared = 0; speedU = 10;
+      spawnTimer = 1.6; obstacles = [];
       player.y = 0; player.vy = 0; player.onGround = true;
       invincibleUntil = 0; answered = false; quizQueue = [];
       showOnly(null);
@@ -711,7 +711,7 @@
     function continueRun() {
       score += 75; cleared += 1;
       var px = playerLeft(), pw = playerW();
-      obstacles = obstacles.filter(function (o) { return o.x > px + pw + W * 0.18; });
+      obstacles = obstacles.filter(function (o) { return o.x > px + pw + pUnit() * 5; });
       invincibleUntil = performance.now() + 1500;
       state = STATE.RUN;
       showOnly(null);
@@ -732,36 +732,37 @@
     }
 
     function update(dt) {
-      var scroll = (state === STATE.RUN) ? speed : (state === STATE.MENU ? W * 0.32 : 0);
-      groundOff = (groundOff + scroll * dt);
+      var U = pUnit();
+      var pxSpeed = (state === STATE.RUN) ? speedU * U : (state === STATE.MENU ? 6 * U : 0);
+      groundOff = groundOff + pxSpeed * dt;
 
       for (var i = 0; i < buildings.length; i++) {
-        buildings[i].x -= scroll * 0.18 * dt;
+        buildings[i].x -= pxSpeed * 0.18 * dt;
       }
       recycle(buildings);
       for (var c = 0; c < clouds.length; c++) {
-        clouds[c].x -= scroll * 0.08 * dt;
+        clouds[c].x -= pxSpeed * 0.08 * dt;
         if (clouds[c].x < -W * 0.3) { clouds[c].x = W + rand(0, W * 0.4); clouds[c].y = rand(H * 0.10, H * 0.34); }
       }
 
       if (state !== STATE.RUN) return;
 
-      speed = Math.min(speed + W * 0.045 * dt, W * 1.05);
-      score += speed * dt * 0.02;
+      speedU = Math.min(speedU + dt * 0.45, 18);
+      score += speedU * dt;
 
-      player.vy -= H * 6.0 * dt;
+      player.vy -= U * 41 * dt;
       player.y += player.vy * dt;
       if (player.y <= 0) { player.y = 0; player.vy = 0; player.onGround = true; }
 
       spawnTimer -= dt;
       if (spawnTimer <= 0) {
         spawnObstacle();
-        var f = speed / W;
-        spawnTimer = Math.max(0.62, rand(1.0, 1.85) - (f - 0.5) * 0.45);
+        var gapUnits = rand(15, 26);
+        spawnTimer = gapUnits / speedU;
       }
 
       for (var k = obstacles.length - 1; k >= 0; k--) {
-        obstacles[k].x -= speed * dt;
+        obstacles[k].x -= pxSpeed * dt;
         if (obstacles[k].x + obstacles[k].w < -10) obstacles.splice(k, 1);
       }
 
