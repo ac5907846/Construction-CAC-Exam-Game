@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Excavator Run | ElectriAI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ElectriAI canonical navbar (from brand spec) */
+    .electriai-nav {
+      background: #0a1a3a;
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: sans-serif;
+      position: relative;
+      z-index: 10;
+    }
+    .electriai-nav .logo { display: flex; align-items: center; text-decoration: none; }
+    .electriai-nav .logo img { height: 36px; display: block; }
+    .electriai-nav .logo-fallback { color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
+    .electriai-nav .nav-links { display: flex; gap: 30px; align-items: center; }
+    .electriai-nav .nav-links a {
+      color: #ffffff; font-size: 16px; text-decoration: none;
+      font-weight: 500; transition: opacity 0.15s ease; letter-spacing: 0.2px;
+    }
+    .electriai-nav .nav-links a:hover { opacity: 0.75; }
+    .electriai-nav .nav-links a.active { font-weight: 700; }
+    .electriai-nav .menu-toggle {
+      display: none; background: none; border: none; color: #ffffff;
+      font-size: 24px; cursor: pointer; padding: 4px 8px; line-height: 1;
+    }
+    .electriai-mobile-menu {
+      display: none; background: #0a1a3a; padding: 4px 20px 18px;
+      flex-direction: column; gap: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08); font-family: sans-serif;
+    }
+    .electriai-mobile-menu.is-open { display: flex; }
+    .electriai-mobile-menu a { color: #ffffff; font-size: 16px; text-decoration: none; font-weight: 500; padding: 8px 0; }
+    .electriai-mobile-menu a.active { font-weight: 700; }
+    @media (max-width: 820px) {
+      .electriai-nav { padding: 10px 16px; }
+      .electriai-nav .nav-links { display: none; }
+      .electriai-nav .menu-toggle { display: block; }
+      .electriai-nav .logo img { height: 30px; }
+      .electriai-nav .logo-fallback { font-size: 22px; }
+    }
+
+    /* Game page */
+    .wrap { max-width: 960px; margin: 0 auto; padding: 28px 28px 56px; }
+    .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; margin: 0 0 6px; }
+    .wrap h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin: 0 0 6px; line-height: 1.2; }
+    .wrap .sub { font-size: 14px; line-height: 1.7; color: #64748b; margin: 0 0 20px; max-width: 640px; }
+
+    .stage {
+      position: relative; width: 100%;
+      aspect-ratio: 16 / 9; min-height: 320px; max-height: 74vh;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      background: #cfe3ff; user-select: none;
+    }
+    canvas#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+    .hud {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 12px; pointer-events: none; gap: 10px;
+    }
+    .pill { background: #0a1a3a; border-radius: 10px; padding: 7px 12px; line-height: 1.1; }
+    .pill .k { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #fbbf24; display: block; }
+    .pill .v { font-size: 18px; font-weight: 800; color: #ffffff; }
+    .pill .v small { font-size: 11px; font-weight: 600; color: #cbd5e1; margin-left: 8px; }
+    .pill.right { text-align: right; }
+    .pill.right .v { font-size: 16px; }
+
+    .overlay {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(10,26,58,0.55); padding: 16px; z-index: 5;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding: 22px 24px; width: 100%; max-width: 460px; text-align: center;
+    }
+    .card.quiz { max-width: 560px; text-align: left; }
+    .card h2 { margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #0f172a; }
+    .card p.lead { margin: 0 0 18px; font-size: 14px; line-height: 1.7; color: #64748b; }
+    .stat-row { display: flex; gap: 12px; justify-content: center; margin: 0 0 18px; }
+    .stat { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; min-width: 96px; }
+    .stat .k { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; }
+    .stat .v { font-size: 22px; font-weight: 800; color: #0f172a; }
+
+    .btn { font-family: sans-serif; cursor: pointer; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; padding: 13px 22px; transition: filter 0.15s ease, transform 0.05s ease; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: #6366f1; color: #ffffff; }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-block { width: 100%; }
+
+    .qlabel { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #94a3b8; text-transform: uppercase; margin: 0 0 8px; }
+    .qtext { font-size: 17px; font-weight: 700; color: #1e293b; line-height: 1.45; margin: 0 0 16px; }
+    .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .opt {
+      display: flex; align-items: center; gap: 10px; text-align: left;
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 11px 12px; font-size: 15px; font-weight: 500; color: #1e293b;
+      cursor: pointer; font-family: sans-serif; transition: border-color 0.12s ease, background 0.12s ease;
+    }
+    .opt:hover:not(:disabled) { border-color: #6366f1; background: #f5f3ff; }
+    .opt:disabled { cursor: default; }
+    .opt .badge { flex: 0 0 24px; height: 24px; border-radius: 6px; background: #6366f1; color: #fff; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+    .opt.correct { background: #ecfdf5; border-color: #10b981; }
+    .opt.correct .badge { background: #10b981; }
+    .opt.wrong { background: #fef2f2; border-color: #ef4444; }
+    .opt.wrong .badge { background: #ef4444; }
+
+    .result { margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 14px; }
+    .result.hidden { display: none; }
+    .verdict { font-size: 16px; font-weight: 800; margin: 0 0 6px; }
+    .verdict.ok { color: #10b981; }
+    .verdict.no { color: #ef4444; }
+    .answerline { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 6px; }
+    .expl { font-size: 14px; line-height: 1.65; color: #475569; margin: 0 0 16px; }
+
+    .hint { font-size: 12px; color: #94a3b8; margin: 14px 0 0; text-align: center; }
+    .source { font-size: 12px; color: #94a3b8; margin: 16px 0 0; }
+
+    @media (max-width: 820px) {
+      .wrap { padding: 20px 16px 44px; }
+      .wrap h1 { font-size: 23px; }
+      .opts { grid-template-columns: 1fr; }
+      .card { padding: 18px 18px; }
+      .qtext { font-size: 16px; }
+      .opt { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="electriai-nav">
+    <a href="https://www.electriai.com" class="logo">
+      <img src="logo.png" alt="ElectriAI" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-fallback" style="display:none;">ElectriAI</span>
+    </a>
+    <div class="nav-links">
+      <a href="https://www.electriai.com/home">Home</a>
+      <a href="https://www.electriai.com/apps" class="active">Apps</a>
+      <a href="https://www.electriai.com/teaching">Teaching</a>
+      <a href="https://www.electriai.com/bio">Bio</a>
+      <a href="https://www.electriai.com/publications">Publications</a>
+      <a href="https://www.electriai.com/electriai-lab">ElectriAI Lab</a>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" aria-expanded="false">&#9776;</button>
+  </nav>
+  <div class="electriai-mobile-menu" id="mobileMenu">
+    <a href="https://www.electriai.com/home">Home</a>
+    <a href="https://www.electriai.com/apps" class="active">Apps</a>
+    <a href="https://www.electriai.com/teaching">Teaching</a>
+    <a href="https://www.electriai.com/bio">Bio</a>
+    <a href="https://www.electriai.com/publications">Publications</a>
+    <a href="https://www.electriai.com/electriai-lab">ElectriAI Lab</a>
+  </div>
+
+  <main class="wrap">
+    <p class="eyebrow">CAC exam trainer</p>
+    <h1>Excavator Run</h1>
+    <p class="sub">Drive the excavator down the jobsite road and jump the obstacles. Clip one and a Certified Associate Constructor practice question stops you cold. Answer it right to keep rolling and bank points. Miss it and the run is over.</p>
+
+    <div class="stage" id="stage">
+      <canvas id="game" aria-label="Excavator running game"></canvas>
+
+      <div class="hud" id="hud">
+        <div class="pill"><span class="k">Score</span><span class="v" id="scoreEl">0<small id="bestEl">best 0</small></span></div>
+        <div class="pill right"><span class="k">Questions cleared</span><span class="v" id="clearedEl">0</span></div>
+      </div>
+
+      <div class="overlay" id="menuOverlay">
+        <div class="card">
+          <h2>Ready to dig in?</h2>
+          <p class="lead">Tap the screen, click, or press space / up arrow to jump. Avoid cones, barrels, barricades, rocks and the rest of the jobsite mess.</p>
+          <button class="btn btn-primary btn-block" id="startBtn">Start driving</button>
+          <p class="hint">Every crash loads a real CAC practice question.</p>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="quizOverlay">
+        <div class="card quiz">
+          <p class="qlabel">Obstacle hit — answer to keep driving</p>
+          <p class="qtext" id="qText"></p>
+          <div class="opts" id="qOpts"></div>
+          <div class="result hidden" id="qResult">
+            <p class="verdict" id="qVerdict"></p>
+            <p class="answerline" id="qAnswer"></p>
+            <p class="expl" id="qExpl"></p>
+            <button class="btn btn-primary btn-block" id="qAction"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="overOverlay">
+        <div class="card">
+          <h2>Run over</h2>
+          <p class="lead">The wrong answer parked you. Brush up and take another lap.</p>
+          <div class="stat-row">
+            <div class="stat"><div class="k">Score</div><div class="v" id="finalScore">0</div></div>
+            <div class="stat"><div class="k">Best</div><div class="v" id="finalBest">0</div></div>
+            <div class="stat"><div class="k">Cleared</div><div class="v" id="finalCleared">0</div></div>
+          </div>
+          <button class="btn btn-primary btn-block" id="restartBtn">Run it again</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="source" id="sourceNote"></p>
+  </main>
+
+  <script id="gamejs">
+  (function () {
+    "use strict";
+
+    var EMBEDDED_QUIZ = {
+  "title": "CAC Exam Practice Questions",
+  "source": "Certified Associate Constructor (CAC) Official Study Guide practice test",
+  "count": 20,
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which statement is true about using texting to communicate in construction?",
+      "options": {
+        "A": "A means of easily and effectively documenting communication",
+        "B": "Appropriate for clarifying but not for formal direction",
+        "C": "Should be completely avoided in construction",
+        "D": "Acceptable for communication if specifically allowed in the contract"
+      },
+      "answer": "B",
+      "explanation": "Texting is fine for quick clarification, but it is too informal and poorly documented to issue formal direction or changes."
+    },
+    {
+      "id": 2,
+      "question": "Which of the following is the best example of an open-ended question?",
+      "options": {
+        "A": "Do you understand what work is supposed to be completed?",
+        "B": "Do you know which shovel to get me from the tool shed?",
+        "C": "What steps are you going to take to complete the activity?",
+        "D": "How do you feel about completing the activities assigned?"
+      },
+      "answer": "C",
+      "explanation": "An open-ended question cannot be answered with a simple yes or no and makes the listener explain, which confirms real understanding."
+    },
+    {
+      "id": 3,
+      "question": "How would a 3-phase, 120/208V load most accurately be wired?",
+      "options": {
+        "A": "One hot, one neutral, and one ground conductor",
+        "B": "Two hot and one neutral conductor",
+        "C": "Three hot and one neutral conductor",
+        "D": "Three hot conductors"
+      },
+      "answer": "C",
+      "explanation": "A 3-phase, 4-wire system uses three hot legs plus a shared neutral."
+    },
+    {
+      "id": 4,
+      "question": "Which fire protection system is most appropriate for an unconditioned (unheated) warehouse in Chicago storing paper, wood, and other Class A combustibles?",
+      "options": {
+        "A": "Wet pipe system",
+        "B": "Dry pipe system",
+        "C": "Deluge system",
+        "D": "Clean agent system"
+      },
+      "answer": "B",
+      "explanation": "In an unheated building in a cold climate, a wet pipe system could freeze and burst, so a dry pipe system is used."
+    },
+    {
+      "id": 5,
+      "question": "The owner wants to fast-track a project. Which delivery system best supports this?",
+      "options": {
+        "A": "Partnering",
+        "B": "Design-bid-build",
+        "C": "CM agency",
+        "D": "Design-build"
+      },
+      "answer": "D",
+      "explanation": "Design-build keeps design and construction under one entity, which lets the two phases overlap and supports fast-tracking."
+    },
+    {
+      "id": 6,
+      "question": "A project engineer is writing a purchase order for a steel package. Which law governs the basic rules of the sale of goods?",
+      "options": {
+        "A": "Davis Bacon Act",
+        "B": "Uniform Commercial Code",
+        "C": "National Labor Relations Act",
+        "D": "Uniform Transportation Code"
+      },
+      "answer": "B",
+      "explanation": "The Uniform Commercial Code (UCC) governs the sale of goods such as a materials purchase order."
+    },
+    {
+      "id": 7,
+      "question": "A steel subcontractor retracts the bid the contractor relied on to win the job. What is the most appropriate legal argument for restitution?",
+      "options": {
+        "A": "Consideration intact",
+        "B": "Legal purpose established",
+        "C": "Promissory estoppel",
+        "D": "Equitable adjustment"
+      },
+      "answer": "C",
+      "explanation": "Promissory estoppel applies because the contractor reasonably relied on the sub’s promise (bid) to their detriment."
+    },
+    {
+      "id": 8,
+      "question": "Which graphical tool is a bar chart that displays a frequency distribution?",
+      "options": {
+        "A": "Histogram",
+        "B": "Pareto chart",
+        "C": "Pie chart",
+        "D": "Fishbone chart"
+      },
+      "answer": "A",
+      "explanation": "A histogram is a bar chart showing how often values fall within ranges, which is a frequency distribution."
+    },
+    {
+      "id": 9,
+      "question": "Which is the most efficient temporary form system for concrete poured continually in the vertical direction?",
+      "options": {
+        "A": "Tilt-up form system",
+        "B": "Flying form system",
+        "C": "Lift slab form system",
+        "D": "Slip form system"
+      },
+      "answer": "D",
+      "explanation": "A slip form moves upward continuously as concrete is placed, which suits a continuous vertical pour."
+    },
+    {
+      "id": 10,
+      "question": "Which party is typically responsible for designing temporary structural formwork?",
+      "options": {
+        "A": "Owner",
+        "B": "Engineer of record",
+        "C": "Contractor/vendor",
+        "D": "Architect"
+      },
+      "answer": "C",
+      "explanation": "Means and methods, including formwork design, are the contractor’s or vendor’s responsibility, not the designer’s."
+    },
+    {
+      "id": 11,
+      "question": "Which system is designed to carry the total vertical load of a structure?",
+      "options": {
+        "A": "Piling",
+        "B": "Cofferdam",
+        "C": "Timber shoring",
+        "D": "Cribbing and tiebacks"
+      },
+      "answer": "A",
+      "explanation": "Piling transfers the full vertical load of the structure down to a competent bearing layer."
+    },
+    {
+      "id": 12,
+      "question": "Which party holds the design liability for a prescriptive specification?",
+      "options": {
+        "A": "Owner",
+        "B": "Contractor",
+        "C": "Architect/engineer",
+        "D": "Code official"
+      },
+      "answer": "C",
+      "explanation": "A prescriptive spec dictates the exact product and method, so the designer (architect/engineer) keeps the design liability."
+    },
+    {
+      "id": 13,
+      "question": "A contractor receives a notice of award but decides not to accept the contract. What is the likely outcome?",
+      "options": {
+        "A": "They lose the amount of their bond premium",
+        "B": "They lose the amount of their bid bond face value",
+        "C": "They can withdraw without ramifications as long as nothing is signed",
+        "D": "They lose the amount of their performance bond face value"
+      },
+      "answer": "B",
+      "explanation": "Backing out after award forfeits the bid bond, which covers the owner’s cost to award to the next bidder."
+    },
+    {
+      "id": 14,
+      "question": "Which statement is true about the critical path?",
+      "options": {
+        "A": "It is the shortest string of activities through the schedule",
+        "B": "It is the longest string of activities through the schedule",
+        "C": "It has zero total float but possibly some free float in the activities",
+        "D": "It includes all activities that cannot be compressed any further"
+      },
+      "answer": "B",
+      "explanation": "The critical path is the longest duration path through the network, and it sets the shortest possible project length."
+    },
+    {
+      "id": 15,
+      "question": "How is fast tracking defined in construction?",
+      "options": {
+        "A": "Planning and scheduling the design",
+        "B": "Overlapping execution of the construction activities",
+        "C": "Finalizing the design and procurement before construction begins",
+        "D": "Overlapping execution of the design, procurement, and construction"
+      },
+      "answer": "D",
+      "explanation": "Fast tracking overlaps design, procurement, and construction rather than running them in sequence."
+    },
+    {
+      "id": 16,
+      "question": "What is the term for shifting activities within their free float to smooth the workforce and reduce peak resource use?",
+      "options": {
+        "A": "Crashing",
+        "B": "Crew utilization",
+        "C": "Resource leveling",
+        "D": "Time-scaled networking"
+      },
+      "answer": "C",
+      "explanation": "Resource leveling moves non-critical activities within their float to even out resource demand."
+    },
+    {
+      "id": 17,
+      "question": "The safety standards use the abbreviation 29 CFR Part 1926. What does CFR stand for?",
+      "options": {
+        "A": "Code of Federal Register",
+        "B": "Code of Federal Regulations",
+        "C": "Construction Federal Register",
+        "D": "Construction Federal Regulations"
+      },
+      "answer": "B",
+      "explanation": "CFR is the Code of Federal Regulations, and Part 1926 covers construction."
+    },
+    {
+      "id": 18,
+      "question": "OSHA requires fall protection for a difference in elevation greater than how many vertical feet?",
+      "options": {
+        "A": "Any distance",
+        "B": "6 ft",
+        "C": "10 ft",
+        "D": "15 ft"
+      },
+      "answer": "B",
+      "explanation": "In construction, fall protection is required at 6 feet or more."
+    },
+    {
+      "id": 19,
+      "question": "What is the height of the top guardrail above the floor to protect against falls at a leading edge?",
+      "options": {
+        "A": "21 in +/- 1 inch",
+        "B": "25 in +/- 2 inches",
+        "C": "35 in +/- 3 inches",
+        "D": "42 in +/- 3 inches"
+      },
+      "answer": "D",
+      "explanation": "The top rail sits at 42 inches, give or take 3 inches."
+    },
+    {
+      "id": 20,
+      "question": "Which payment term is the most favorable to the purchaser?",
+      "options": {
+        "A": "Cash on demand",
+        "B": "3/20 Net 60",
+        "C": "2/20 Net 60",
+        "D": "2/10 Net 20"
+      },
+      "answer": "B",
+      "explanation": "3/20 Net 60 gives the biggest early-pay discount (3 percent) and the longest time to pay (60 days), which most benefits the buyer."
+    }
+  ]
+};
+
+    /* hamburger menu */
+    var toggle = document.getElementById('menuToggle');
+    var menu = document.getElementById('mobileMenu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', function () {
+        var open = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', open);
+        toggle.innerHTML = open ? '&#10005;' : '&#9776;';
+      });
+    }
+
+    /* questions: start with embedded copy, then try live quiz.json */
+    var QUESTIONS = (EMBEDDED_QUIZ && EMBEDDED_QUIZ.questions) ? EMBEDDED_QUIZ.questions.slice() : [];
+    var sourceNote = document.getElementById('sourceNote');
+    if (sourceNote && EMBEDDED_QUIZ && EMBEDDED_QUIZ.source) {
+      sourceNote.textContent = 'Questions: ' + EMBEDDED_QUIZ.source + '.';
+    }
+    try {
+      fetch('quiz.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (d && Array.isArray(d.questions) && d.questions.length) {
+            QUESTIONS = d.questions.slice();
+            if (sourceNote && d.source) sourceNote.textContent = 'Questions: ' + d.source + '.';
+          }
+        })
+        .catch(function () {});
+    } catch (e) {}
+
+    /* canvas setup */
+    var canvas = document.getElementById('game');
+    var ctx = canvas.getContext('2d');
+    var W = 0, H = 0, DPR = 1;
+
+    function resize() {
+      var r = canvas.getBoundingClientRect();
+      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      W = Math.max(1, r.width);
+      H = Math.max(1, r.height);
+      canvas.width = Math.round(W * DPR);
+      canvas.height = Math.round(H * DPR);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      initBG();
+    }
+    window.addEventListener('resize', resize);
+
+    /* helpers */
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function rr(x, y, w, h, r) {
+      r = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+    function shuffle(a) {
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+
+    /* state */
+    var STATE = { MENU: 0, RUN: 1, QUIZ: 2, OVER: 3 };
+    var state = STATE.MENU;
+    var score = 0, best = loadBest(), cleared = 0;
+    var speed = 0, lastT = 0, spawnTimer = 0;
+    var player = { y: 0, vy: 0, onGround: true };
+    var obstacles = [];
+    var invincibleUntil = 0;
+    var quizQueue = [], currentQ = null, answered = false;
+
+    function loadBest() {
+      try { return parseInt(localStorage.getItem('electriai_excavator_best') || '0', 10) || 0; }
+      catch (e) { return 0; }
+    }
+    function saveBest() {
+      try { localStorage.setItem('electriai_excavator_best', String(Math.floor(best))); }
+      catch (e) {}
+    }
+
+    /* parallax background layers */
+    var buildings = [], clouds = [], groundOff = 0;
+    function initBG() {
+      buildings = [];
+      var x = 0;
+      while (x < W + W) {
+        var bw = rand(38, 92);
+        var bh = rand(H * 0.12, H * 0.34);
+        buildings.push({ x: x, w: bw, h: bh, win: Math.random() < 0.6 });
+        x += bw + rand(6, 26);
+      }
+      clouds = [];
+      for (var i = 0; i < 3; i++) {
+        clouds.push({ x: rand(0, W), y: rand(H * 0.10, H * 0.34), s: rand(0.7, 1.3) });
+      }
+      groundOff = 0;
+    }
+
+    /* obstacle templates: w and h are multiples of obsU */
+    var OBST = [
+      { name: 'cone',      w: 0.85, h: 1.0,  draw: drawCone },
+      { name: 'rock',      w: 1.25, h: 0.85, draw: drawRock },
+      { name: 'barrel',    w: 0.9,  h: 1.15, draw: drawBarrel },
+      { name: 'barricade', w: 1.55, h: 1.0,  draw: drawBarricade },
+      { name: 'crate',     w: 1.05, h: 1.05, draw: drawCrate },
+      { name: 'sign',      w: 1.05, h: 1.4,  draw: drawSign },
+      { name: 'bricks',    w: 1.4,  h: 0.62, draw: drawBricks },
+      { name: 'hydrant',   w: 0.7,  h: 1.0,  draw: drawHydrant }
+    ];
+
+    function groundY() { return H * 0.80; }
+    function obsU() { return H * 0.135; }
+    function pUnit() { return H * 0.085; }
+    function playerLeft() { return W * 0.14; }
+    function playerW() { return pUnit() * 2.7; }
+    function playerH() { return pUnit() * 2.0; }
+
+    /* input */
+    function jump() {
+      if (state !== STATE.RUN) return;
+      if (player.onGround) { player.vy = H * 2.15; player.onGround = false; }
+    }
+    canvas.addEventListener('pointerdown', function (e) {
+      if (state === STATE.RUN) { e.preventDefault(); jump(); }
+    });
+    window.addEventListener('keydown', function (e) {
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === ' ') {
+        if (state === STATE.RUN) { e.preventDefault(); jump(); }
+        else if (state === STATE.MENU) { e.preventDefault(); startGame(); }
+        else if (state === STATE.OVER) { e.preventDefault(); startGame(); }
+      }
+    });
+
+    /* overlays */
+    var menuOverlay = document.getElementById('menuOverlay');
+    var quizOverlay = document.getElementById('quizOverlay');
+    var overOverlay = document.getElementById('overOverlay');
+    function showOnly(el) {
+      [menuOverlay, quizOverlay, overOverlay].forEach(function (o) {
+        if (o === el) o.classList.remove('hidden'); else o.classList.add('hidden');
+      });
+      if (!el) { menuOverlay.classList.add('hidden'); quizOverlay.classList.add('hidden'); overOverlay.classList.add('hidden'); }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('restartBtn').addEventListener('click', startGame);
+
+    function startGame() {
+      score = 0; cleared = 0; speed = W * 0.5;
+      spawnTimer = 0.6; obstacles = [];
+      player.y = 0; player.vy = 0; player.onGround = true;
+      invincibleUntil = 0; answered = false; quizQueue = [];
+      showOnly(null);
+      state = STATE.RUN;
+      lastT = performance.now();
+    }
+
+    function gameOver() {
+      state = STATE.OVER;
+      if (score > best) { best = Math.floor(score); saveBest(); }
+      document.getElementById('finalScore').textContent = Math.floor(score).toLocaleString();
+      document.getElementById('finalBest').textContent = Math.floor(best).toLocaleString();
+      document.getElementById('finalCleared').textContent = String(cleared);
+      showOnly(overOverlay);
+    }
+
+    /* quiz */
+    var qText = document.getElementById('qText');
+    var qOpts = document.getElementById('qOpts');
+    var qResult = document.getElementById('qResult');
+    var qVerdict = document.getElementById('qVerdict');
+    var qAnswer = document.getElementById('qAnswer');
+    var qExpl = document.getElementById('qExpl');
+    var qAction = document.getElementById('qAction');
+    var LETTERS = ['A', 'B', 'C', 'D'];
+
+    function nextQuestion() {
+      if (!QUESTIONS.length) return null;
+      if (quizQueue.length === 0) {
+        quizQueue = shuffle(QUESTIONS.map(function (_, i) { return i; }));
+      }
+      return QUESTIONS[quizQueue.shift()];
+    }
+
+    function triggerQuiz() {
+      currentQ = nextQuestion();
+      if (!currentQ) { gameOver(); return; }
+      state = STATE.QUIZ;
+      answered = false;
+      qText.textContent = currentQ.question;
+      qResult.classList.add('hidden');
+      qOpts.innerHTML = '';
+      LETTERS.forEach(function (L) {
+        if (!(L in currentQ.options)) return;
+        var b = document.createElement('button');
+        b.className = 'opt';
+        b.setAttribute('data-letter', L);
+        b.innerHTML = '<span class="badge">' + L + '</span><span>' + escapeHtml(currentQ.options[L]) + '</span>';
+        b.addEventListener('click', function () { answer(L); });
+        qOpts.appendChild(b);
+      });
+      showOnly(quizOverlay);
+    }
+
+    function answer(letter) {
+      if (answered) return;
+      answered = true;
+      var ok = (letter === currentQ.answer);
+      var btns = qOpts.querySelectorAll('.opt');
+      btns.forEach(function (b) {
+        b.disabled = true;
+        var L = b.getAttribute('data-letter');
+        if (L === currentQ.answer) b.classList.add('correct');
+        else if (L === letter) b.classList.add('wrong');
+      });
+      qVerdict.textContent = ok ? 'Correct' : 'Not quite';
+      qVerdict.className = 'verdict ' + (ok ? 'ok' : 'no');
+      qAnswer.textContent = 'Answer ' + currentQ.answer + ': ' + currentQ.options[currentQ.answer];
+      qExpl.textContent = currentQ.explanation || '';
+      qResult.classList.remove('hidden');
+      if (ok) {
+        qAction.textContent = 'Keep driving (+75)';
+        qAction.onclick = continueRun;
+      } else {
+        qAction.textContent = 'See results';
+        qAction.onclick = gameOver;
+      }
+    }
+
+    function continueRun() {
+      score += 75; cleared += 1;
+      var px = playerLeft(), pw = playerW();
+      obstacles = obstacles.filter(function (o) { return o.x > px + pw + W * 0.18; });
+      invincibleUntil = performance.now() + 1500;
+      state = STATE.RUN;
+      showOnly(null);
+      lastT = performance.now();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    /* simulation */
+    function spawnObstacle() {
+      var t = OBST[Math.floor(Math.random() * OBST.length)];
+      var u = obsU();
+      obstacles.push({ x: W + u, tmpl: t, w: t.w * u, h: t.h * u });
+    }
+
+    function update(dt) {
+      var scroll = (state === STATE.RUN) ? speed : (state === STATE.MENU ? W * 0.32 : 0);
+      groundOff = (groundOff + scroll * dt);
+
+      for (var i = 0; i < buildings.length; i++) {
+        buildings[i].x -= scroll * 0.18 * dt;
+      }
+      recycle(buildings);
+      for (var c = 0; c < clouds.length; c++) {
+        clouds[c].x -= scroll * 0.08 * dt;
+        if (clouds[c].x < -W * 0.3) { clouds[c].x = W + rand(0, W * 0.4); clouds[c].y = rand(H * 0.10, H * 0.34); }
+      }
+
+      if (state !== STATE.RUN) return;
+
+      speed = Math.min(speed + W * 0.045 * dt, W * 1.05);
+      score += speed * dt * 0.02;
+
+      player.vy -= H * 6.0 * dt;
+      player.y += player.vy * dt;
+      if (player.y <= 0) { player.y = 0; player.vy = 0; player.onGround = true; }
+
+      spawnTimer -= dt;
+      if (spawnTimer <= 0) {
+        spawnObstacle();
+        var f = speed / W;
+        spawnTimer = Math.max(0.62, rand(1.0, 1.85) - (f - 0.5) * 0.45);
+      }
+
+      for (var k = obstacles.length - 1; k >= 0; k--) {
+        obstacles[k].x -= speed * dt;
+        if (obstacles[k].x + obstacles[k].w < -10) obstacles.splice(k, 1);
+      }
+
+      if (performance.now() > invincibleUntil) {
+        var gY = groundY();
+        var pL = playerLeft(), pW = playerW(), pH = playerH();
+        var pbx = pL + pW * 0.20, pbw = pW * 0.62;
+        var pby = gY - player.y - pH + pH * 0.10, pbh = pH * 0.82;
+        for (var o = 0; o < obstacles.length; o++) {
+          var ob = obstacles[o];
+          var obx = ob.x + ob.w * 0.16, obw = ob.w * 0.68;
+          var oby = gY - ob.h + ob.h * 0.06, obh = ob.h * 0.9;
+          if (pbx < obx + obw && pbx + pbw > obx && pby < oby + obh && pby + pbh > oby) {
+            triggerQuiz();
+            break;
+          }
+        }
+      }
+    }
+
+    function recycle(arr) {
+      var maxRight = 0, i;
+      for (i = 0; i < arr.length; i++) { if (arr[i].x + arr[i].w > maxRight) maxRight = arr[i].x + arr[i].w; }
+      for (i = 0; i < arr.length; i++) {
+        if (arr[i].x + arr[i].w < -4) {
+          arr[i].x = maxRight + rand(6, 26);
+          arr[i].w = rand(38, 92);
+          arr[i].h = rand(H * 0.12, H * 0.34);
+          arr[i].win = Math.random() < 0.6;
+          maxRight = arr[i].x + arr[i].w;
+        }
+      }
+    }
+
+    /* drawing */
+    function draw() {
+      var gY = groundY();
+      ctx.fillStyle = '#cfe3ff';
+      ctx.fillRect(0, 0, W, gY);
+
+      ctx.fillStyle = '#fde9a7';
+      ctx.beginPath(); ctx.arc(W * 0.82, H * 0.20, H * 0.075, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      clouds.forEach(function (cl) { drawCloud(cl.x, cl.y, cl.s); });
+
+      ctx.fillStyle = '#0a1a3a';
+      buildings.forEach(function (b) {
+        ctx.fillRect(b.x, gY - b.h, b.w, b.h);
+      });
+      ctx.fillStyle = '#fbbf24';
+      buildings.forEach(function (b) {
+        if (!b.win) return;
+        var cols = Math.max(1, Math.floor(b.w / 16));
+        var rows = Math.max(1, Math.floor(b.h / 22));
+        for (var ix = 0; ix < cols; ix++) {
+          for (var iy = 0; iy < rows; iy++) {
+            if ((ix + iy) % 2 === 0) {
+              ctx.globalAlpha = 0.75;
+              ctx.fillRect(b.x + 6 + ix * 16, gY - b.h + 8 + iy * 22, 5, 7);
+            }
+          }
+        }
+      });
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(0, gY, W, H - gY);
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(0, gY, W, 3);
+
+      ctx.fillStyle = '#fbbf24';
+      var dashY = gY + (H - gY) * 0.55;
+      var gap = Math.max(48, W * 0.09), dw = gap * 0.42;
+      var off = groundOff % gap;
+      for (var dx = -off; dx < W; dx += gap) {
+        ctx.fillRect(dx, dashY, dw, 5);
+      }
+
+      for (var o = 0; o < obstacles.length; o++) {
+        var ob = obstacles[o];
+        ctx.save();
+        ob.tmpl.draw(ob.x, gY, ob.w, ob.h);
+        ctx.restore();
+      }
+
+      drawExcavator(playerLeft(), gY - player.y, pUnit());
+    }
+
+    function drawCloud(x, y, s) {
+      ctx.beginPath();
+      ctx.ellipse(x, y, 30 * s, 13 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 26 * s, y + 4 * s, 22 * s, 10 * s, 0, 0, Math.PI * 2);
+      ctx.ellipse(x - 24 * s, y + 5 * s, 20 * s, 9 * s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawExcavator(left, bottom, u) {
+      var flashing = (state === STATE.RUN) && (performance.now() < invincibleUntil) && (Math.floor(performance.now() / 110) % 2 === 0);
+      ctx.globalAlpha = flashing ? 0.45 : 1;
+
+      var trackW = u * 2.5, trackH = u * 0.5;
+      var ty = bottom - trackH;
+
+      var shadowScale = Math.max(0.4, 1 - player.y / (H * 0.4));
+      ctx.fillStyle = 'rgba(15,23,42,0.18)';
+      ctx.beginPath();
+      ctx.ellipse(left + trackW * 0.5, bottom + 4, trackW * 0.5 * shadowScale, u * 0.16 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#1f2937';
+      rr(left, ty, trackW, trackH, trackH * 0.5); ctx.fill();
+      ctx.fillStyle = '#475569';
+      var spin = (groundOff * 0.06) % (Math.PI * 2);
+      for (var wIdx = 0; wIdx < 3; wIdx++) {
+        var wx = left + u * 0.55 + wIdx * u * 0.7, wy = ty + trackH * 0.5;
+        ctx.beginPath(); ctx.arc(wx, wy, u * 0.17, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + Math.cos(spin) * u * 0.14, wy + Math.sin(spin) * u * 0.14); ctx.stroke();
+      }
+
+      var bodyW = u * 1.9, bodyH = u * 0.62, bx = left + u * 0.32, by = ty - bodyH;
+      ctx.fillStyle = '#fbbf24'; ctx.strokeStyle = '#d99a00'; ctx.lineWidth = 1.5;
+      rr(bx, by, bodyW, bodyH, u * 0.12); ctx.fill(); ctx.stroke();
+
+      var cabW = u * 0.92, cabH = u * 0.72, cabX = bx + u * 0.12, cabY = by - cabH;
+      rr(cabX, cabY, cabW, cabH, u * 0.1); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#0a1a3a';
+      rr(cabX + cabW * 0.18, cabY + cabH * 0.16, cabW * 0.66, cabH * 0.5, u * 0.06); ctx.fill();
+
+      var pivX = bx + bodyW - u * 0.18, pivY = by + bodyH * 0.3;
+      var elbX = pivX + u * 1.0, elbY = pivY - u * 0.62;
+      var buX = elbX + u * 0.22, buY = elbY + u * 0.78;
+      ctx.strokeStyle = '#fbbf24'; ctx.lineCap = 'round';
+      ctx.lineWidth = u * 0.2; ctx.beginPath(); ctx.moveTo(pivX, pivY); ctx.lineTo(elbX, elbY); ctx.stroke();
+      ctx.lineWidth = u * 0.16; ctx.beginPath(); ctx.moveTo(elbX, elbY); ctx.lineTo(buX, buY); ctx.stroke();
+      ctx.fillStyle = '#fbbf24'; ctx.strokeStyle = '#d99a00'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(buX - u * 0.05, buY - u * 0.08);
+      ctx.lineTo(buX + u * 0.32, buY + u * 0.02);
+      ctx.lineTo(buX + u * 0.26, buY + u * 0.34);
+      ctx.lineTo(buX - u * 0.06, buY + u * 0.3);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      ctx.globalAlpha = 1;
+    }
+
+    /* obstacle draws */
+    function drawCone(x, gY, w, h) {
+      ctx.fillStyle = '#c2410c';
+      rr(x, gY - h * 0.12, w, h * 0.12, 2); ctx.fill();
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.moveTo(x + w * 0.5, gY - h);
+      ctx.lineTo(x + w * 0.9, gY - h * 0.12);
+      ctx.lineTo(x + w * 0.1, gY - h * 0.12);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(x + w * 0.31, gY - h * 0.46);
+      ctx.lineTo(x + w * 0.69, gY - h * 0.46);
+      ctx.lineTo(x + w * 0.74, gY - h * 0.30);
+      ctx.lineTo(x + w * 0.26, gY - h * 0.30);
+      ctx.closePath(); ctx.fill();
+    }
+
+    function drawRock(x, gY, w, h) {
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(x + w * 0.04, gY);
+      ctx.lineTo(x + w * 0.0, gY - h * 0.5);
+      ctx.lineTo(x + w * 0.28, gY - h * 0.95);
+      ctx.lineTo(x + w * 0.66, gY - h);
+      ctx.lineTo(x + w * 0.96, gY - h * 0.6);
+      ctx.lineTo(x + w, gY);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(x + w * 0.28, gY - h * 0.95);
+      ctx.lineTo(x + w * 0.66, gY - h);
+      ctx.lineTo(x + w * 0.6, gY - h * 0.55);
+      ctx.lineTo(x + w * 0.32, gY - h * 0.5);
+      ctx.closePath(); ctx.fill();
+    }
+
+    function drawBarrel(x, gY, w, h) {
+      ctx.fillStyle = '#ea580c';
+      rr(x + w * 0.1, gY - h, w * 0.8, h, w * 0.12); ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(x + w * 0.1, gY - h * 0.74, w * 0.8, h * 0.14);
+      ctx.fillRect(x + w * 0.1, gY - h * 0.36, w * 0.8, h * 0.14);
+      ctx.strokeStyle = '#c2410c'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(x + w * 0.5, gY - h, w * 0.4, h * 0.07, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    function drawBarricade(x, gY, w, h) {
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = Math.max(2, w * 0.05); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x + w * 0.2, gY - h * 0.55); ctx.lineTo(x + w * 0.05, gY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + w * 0.8, gY - h * 0.55); ctx.lineTo(x + w * 0.95, gY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + w * 0.2, gY - h * 0.55); ctx.lineTo(x + w * 0.95, gY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + w * 0.8, gY - h * 0.55); ctx.lineTo(x + w * 0.05, gY); ctx.stroke();
+      var by = gY - h, bh = h * 0.42, bx = x, bw = w;
+      ctx.save();
+      rr(bx, by, bw, bh, 3); ctx.clip();
+      ctx.fillStyle = '#fbbf24'; ctx.fillRect(bx, by, bw, bh);
+      ctx.fillStyle = '#1f2937';
+      var step = bh * 0.9;
+      for (var sx = -bh; sx < bw + bh; sx += step * 2) {
+        ctx.beginPath();
+        ctx.moveTo(bx + sx, by + bh);
+        ctx.lineTo(bx + sx + step, by + bh);
+        ctx.lineTo(bx + sx + step + bh, by);
+        ctx.lineTo(bx + sx + bh, by);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+      ctx.strokeStyle = '#d99a00'; ctx.lineWidth = 1.5; rr(bx, by, bw, bh, 3); ctx.stroke();
+    }
+
+    function drawCrate(x, gY, w, h) {
+      ctx.fillStyle = '#b45309';
+      rr(x + w * 0.05, gY - h, w * 0.9, h, 3); ctx.fill();
+      ctx.strokeStyle = '#78350f'; ctx.lineWidth = Math.max(2, w * 0.04);
+      var ix = x + w * 0.05, iy = gY - h, iw = w * 0.9, ih = h;
+      ctx.strokeRect(ix, iy, iw, ih);
+      ctx.beginPath(); ctx.moveTo(ix, iy); ctx.lineTo(ix + iw, iy + ih); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ix + iw, iy); ctx.lineTo(ix, iy + ih); ctx.stroke();
+    }
+
+    function drawSign(x, gY, w, h) {
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = Math.max(3, w * 0.12);
+      ctx.beginPath(); ctx.moveTo(x + w * 0.5, gY); ctx.lineTo(x + w * 0.5, gY - h * 0.5); ctx.stroke();
+      var cx = x + w * 0.5, cy = gY - h * 0.74, rad = Math.min(w, h) * 0.42;
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - rad); ctx.lineTo(cx + rad, cy); ctx.lineTo(cx, cy + rad); ctx.lineTo(cx - rad, cy);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#1f2937';
+      ctx.fillRect(cx - rad * 0.09, cy - rad * 0.5, rad * 0.18, rad * 0.6);
+      ctx.beginPath(); ctx.arc(cx, cy + rad * 0.42, rad * 0.11, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawBricks(x, gY, w, h) {
+      var rows = 3, rh = h / rows;
+      for (var ry = 0; ry < rows; ry++) {
+        var cols = 3, offset = (ry % 2) * (w / cols) * 0.5;
+        for (var cxi = 0; cxi < cols + 1; cxi++) {
+          var bx = x + offset + cxi * (w / cols) - (w / cols);
+          if (bx + w / cols * 0.92 < x || bx > x + w) continue;
+          ctx.fillStyle = '#b91c1c';
+          var drawX = Math.max(x, bx);
+          var drawW = Math.min(x + w, bx + (w / cols) * 0.92) - drawX;
+          if (drawW <= 0) continue;
+          ctx.fillRect(drawX, gY - h + ry * rh + 1, drawW, rh - 2);
+        }
+      }
+    }
+
+    function drawHydrant(x, gY, w, h) {
+      ctx.fillStyle = '#dc2626';
+      rr(x + w * 0.28, gY - h * 0.85, w * 0.44, h * 0.85, w * 0.1); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + w * 0.5, gY - h * 0.85, w * 0.22, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(x + w * 0.05, gY - h * 0.6, w * 0.9, h * 0.12);
+      ctx.beginPath(); ctx.arc(x + w * 0.5, gY - h * 0.95, w * 0.12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(x + w * 0.2, gY - h * 0.05, w * 0.6, h * 0.05);
+    }
+
+    /* HUD + loop */
+    var scoreEl = document.getElementById('scoreEl');
+    var bestEl = document.getElementById('bestEl');
+    var clearedEl = document.getElementById('clearedEl');
+
+    function updateHUD() {
+      scoreEl.firstChild.textContent = Math.floor(score).toLocaleString();
+      bestEl.textContent = 'best ' + Math.floor(best).toLocaleString();
+      clearedEl.textContent = String(cleared);
+    }
+
+    function frame(t) {
+      var dt = Math.min((t - lastT) / 1000, 0.05);
+      if (!isFinite(dt) || dt < 0) dt = 0;
+      lastT = t;
+      update(dt);
+      draw();
+      updateHUD();
+      requestAnimationFrame(frame);
+    }
+
+    /* boot */
+    resize();
+    showOnly(menuOverlay);
+    lastT = performance.now();
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

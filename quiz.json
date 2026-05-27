@@ -1,0 +1,247 @@
+{
+  "title": "CAC Exam Practice Questions",
+  "source": "Certified Associate Constructor (CAC) Official Study Guide practice test",
+  "count": 20,
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which statement is true about using texting to communicate in construction?",
+      "options": {
+        "A": "A means of easily and effectively documenting communication",
+        "B": "Appropriate for clarifying but not for formal direction",
+        "C": "Should be completely avoided in construction",
+        "D": "Acceptable for communication if specifically allowed in the contract"
+      },
+      "answer": "B",
+      "explanation": "Texting is fine for quick clarification, but it is too informal and poorly documented to issue formal direction or changes."
+    },
+    {
+      "id": 2,
+      "question": "Which of the following is the best example of an open-ended question?",
+      "options": {
+        "A": "Do you understand what work is supposed to be completed?",
+        "B": "Do you know which shovel to get me from the tool shed?",
+        "C": "What steps are you going to take to complete the activity?",
+        "D": "How do you feel about completing the activities assigned?"
+      },
+      "answer": "C",
+      "explanation": "An open-ended question cannot be answered with a simple yes or no and makes the listener explain, which confirms real understanding."
+    },
+    {
+      "id": 3,
+      "question": "How would a 3-phase, 120/208V load most accurately be wired?",
+      "options": {
+        "A": "One hot, one neutral, and one ground conductor",
+        "B": "Two hot and one neutral conductor",
+        "C": "Three hot and one neutral conductor",
+        "D": "Three hot conductors"
+      },
+      "answer": "C",
+      "explanation": "A 3-phase, 4-wire system uses three hot legs plus a shared neutral."
+    },
+    {
+      "id": 4,
+      "question": "Which fire protection system is most appropriate for an unconditioned (unheated) warehouse in Chicago storing paper, wood, and other Class A combustibles?",
+      "options": {
+        "A": "Wet pipe system",
+        "B": "Dry pipe system",
+        "C": "Deluge system",
+        "D": "Clean agent system"
+      },
+      "answer": "B",
+      "explanation": "In an unheated building in a cold climate, a wet pipe system could freeze and burst, so a dry pipe system is used."
+    },
+    {
+      "id": 5,
+      "question": "The owner wants to fast-track a project. Which delivery system best supports this?",
+      "options": {
+        "A": "Partnering",
+        "B": "Design-bid-build",
+        "C": "CM agency",
+        "D": "Design-build"
+      },
+      "answer": "D",
+      "explanation": "Design-build keeps design and construction under one entity, which lets the two phases overlap and supports fast-tracking."
+    },
+    {
+      "id": 6,
+      "question": "A project engineer is writing a purchase order for a steel package. Which law governs the basic rules of the sale of goods?",
+      "options": {
+        "A": "Davis Bacon Act",
+        "B": "Uniform Commercial Code",
+        "C": "National Labor Relations Act",
+        "D": "Uniform Transportation Code"
+      },
+      "answer": "B",
+      "explanation": "The Uniform Commercial Code (UCC) governs the sale of goods such as a materials purchase order."
+    },
+    {
+      "id": 7,
+      "question": "A steel subcontractor retracts the bid the contractor relied on to win the job. What is the most appropriate legal argument for restitution?",
+      "options": {
+        "A": "Consideration intact",
+        "B": "Legal purpose established",
+        "C": "Promissory estoppel",
+        "D": "Equitable adjustment"
+      },
+      "answer": "C",
+      "explanation": "Promissory estoppel applies because the contractor reasonably relied on the sub’s promise (bid) to their detriment."
+    },
+    {
+      "id": 8,
+      "question": "Which graphical tool is a bar chart that displays a frequency distribution?",
+      "options": {
+        "A": "Histogram",
+        "B": "Pareto chart",
+        "C": "Pie chart",
+        "D": "Fishbone chart"
+      },
+      "answer": "A",
+      "explanation": "A histogram is a bar chart showing how often values fall within ranges, which is a frequency distribution."
+    },
+    {
+      "id": 9,
+      "question": "Which is the most efficient temporary form system for concrete poured continually in the vertical direction?",
+      "options": {
+        "A": "Tilt-up form system",
+        "B": "Flying form system",
+        "C": "Lift slab form system",
+        "D": "Slip form system"
+      },
+      "answer": "D",
+      "explanation": "A slip form moves upward continuously as concrete is placed, which suits a continuous vertical pour."
+    },
+    {
+      "id": 10,
+      "question": "Which party is typically responsible for designing temporary structural formwork?",
+      "options": {
+        "A": "Owner",
+        "B": "Engineer of record",
+        "C": "Contractor/vendor",
+        "D": "Architect"
+      },
+      "answer": "C",
+      "explanation": "Means and methods, including formwork design, are the contractor’s or vendor’s responsibility, not the designer’s."
+    },
+    {
+      "id": 11,
+      "question": "Which system is designed to carry the total vertical load of a structure?",
+      "options": {
+        "A": "Piling",
+        "B": "Cofferdam",
+        "C": "Timber shoring",
+        "D": "Cribbing and tiebacks"
+      },
+      "answer": "A",
+      "explanation": "Piling transfers the full vertical load of the structure down to a competent bearing layer."
+    },
+    {
+      "id": 12,
+      "question": "Which party holds the design liability for a prescriptive specification?",
+      "options": {
+        "A": "Owner",
+        "B": "Contractor",
+        "C": "Architect/engineer",
+        "D": "Code official"
+      },
+      "answer": "C",
+      "explanation": "A prescriptive spec dictates the exact product and method, so the designer (architect/engineer) keeps the design liability."
+    },
+    {
+      "id": 13,
+      "question": "A contractor receives a notice of award but decides not to accept the contract. What is the likely outcome?",
+      "options": {
+        "A": "They lose the amount of their bond premium",
+        "B": "They lose the amount of their bid bond face value",
+        "C": "They can withdraw without ramifications as long as nothing is signed",
+        "D": "They lose the amount of their performance bond face value"
+      },
+      "answer": "B",
+      "explanation": "Backing out after award forfeits the bid bond, which covers the owner’s cost to award to the next bidder."
+    },
+    {
+      "id": 14,
+      "question": "Which statement is true about the critical path?",
+      "options": {
+        "A": "It is the shortest string of activities through the schedule",
+        "B": "It is the longest string of activities through the schedule",
+        "C": "It has zero total float but possibly some free float in the activities",
+        "D": "It includes all activities that cannot be compressed any further"
+      },
+      "answer": "B",
+      "explanation": "The critical path is the longest duration path through the network, and it sets the shortest possible project length."
+    },
+    {
+      "id": 15,
+      "question": "How is fast tracking defined in construction?",
+      "options": {
+        "A": "Planning and scheduling the design",
+        "B": "Overlapping execution of the construction activities",
+        "C": "Finalizing the design and procurement before construction begins",
+        "D": "Overlapping execution of the design, procurement, and construction"
+      },
+      "answer": "D",
+      "explanation": "Fast tracking overlaps design, procurement, and construction rather than running them in sequence."
+    },
+    {
+      "id": 16,
+      "question": "What is the term for shifting activities within their free float to smooth the workforce and reduce peak resource use?",
+      "options": {
+        "A": "Crashing",
+        "B": "Crew utilization",
+        "C": "Resource leveling",
+        "D": "Time-scaled networking"
+      },
+      "answer": "C",
+      "explanation": "Resource leveling moves non-critical activities within their float to even out resource demand."
+    },
+    {
+      "id": 17,
+      "question": "The safety standards use the abbreviation 29 CFR Part 1926. What does CFR stand for?",
+      "options": {
+        "A": "Code of Federal Register",
+        "B": "Code of Federal Regulations",
+        "C": "Construction Federal Register",
+        "D": "Construction Federal Regulations"
+      },
+      "answer": "B",
+      "explanation": "CFR is the Code of Federal Regulations, and Part 1926 covers construction."
+    },
+    {
+      "id": 18,
+      "question": "OSHA requires fall protection for a difference in elevation greater than how many vertical feet?",
+      "options": {
+        "A": "Any distance",
+        "B": "6 ft",
+        "C": "10 ft",
+        "D": "15 ft"
+      },
+      "answer": "B",
+      "explanation": "In construction, fall protection is required at 6 feet or more."
+    },
+    {
+      "id": 19,
+      "question": "What is the height of the top guardrail above the floor to protect against falls at a leading edge?",
+      "options": {
+        "A": "21 in +/- 1 inch",
+        "B": "25 in +/- 2 inches",
+        "C": "35 in +/- 3 inches",
+        "D": "42 in +/- 3 inches"
+      },
+      "answer": "D",
+      "explanation": "The top rail sits at 42 inches, give or take 3 inches."
+    },
+    {
+      "id": 20,
+      "question": "Which payment term is the most favorable to the purchaser?",
+      "options": {
+        "A": "Cash on demand",
+        "B": "3/20 Net 60",
+        "C": "2/20 Net 60",
+        "D": "2/10 Net 20"
+      },
+      "answer": "B",
+      "explanation": "3/20 Net 60 gives the biggest early-pay discount (3 percent) and the longest time to pay (60 days), which most benefits the buyer."
+    }
+  ]
+}
